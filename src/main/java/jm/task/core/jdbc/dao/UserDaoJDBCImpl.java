@@ -10,42 +10,28 @@ import java.util.List;
 public class UserDaoJDBCImpl implements UserDao {
     public UserDaoJDBCImpl() {
     }
+    @Override
     public void createUsersTable() {
-        String createTable = "CREATE TABLE USERS (id BIGINT primary key, Name VARCHAR(20), LastName VARCHAR(45), age TINYINT)";
-        Connection newCon = Util.getConnection();
-        try (Statement statement = newCon.createStatement()){
-            DatabaseMetaData meta = newCon.getMetaData();
-            ResultSet resultSet = meta.getTables(null, null, "USERS", new String[] {"TABLE"});
-            if (!resultSet.next()) {
+        String createTable = "CREATE TABLE IF NOT EXISTS USERS (id BIGINT primary key, Name VARCHAR(20), LastName VARCHAR(45), age TINYINT)";
+        try (Statement statement = Util.getConnection().createStatement()){
             statement.execute(createTable);
-            } else {
-                System.out.println("Таблица уже существует");
-            }
         }catch (Exception e) {
             System.out.println("Таблица не добавилась");
         }
     }
-
+    @Override
     public void dropUsersTable() {
-        Connection newCon = Util.getConnection();
-        try (Statement statement = newCon.createStatement()){
-            DatabaseMetaData meta = newCon.getMetaData();
-            ResultSet resultSet = meta.getTables(null, null, "USERS", new String[] {"TABLE"});
-            if (resultSet.next()) {
-                statement.execute("DROP TABLE USERS");
-            } else {
-                System.out.println("Таблица не существует");
-            }
+        try (Statement statement = Util.getConnection().createStatement()){
+                statement.execute("DROP TABLE IF EXISTS USERS");
         } catch (SQLException e) {
             System.out.println("Eще жива табличка");
         }
     }
-
+    @Override
     public void saveUser(String name, String lastName, byte age) {
-        Connection newCon = Util.getConnection();
         String insertUser = "INSERT INTO USERS(id, name, lastName, age) VALUES (?, ?, ?, ?)";
         User man = new User(name,lastName,age);
-        try (PreparedStatement statement = newCon.prepareStatement(insertUser)){
+        try (PreparedStatement statement = Util.getConnection().prepareStatement(insertUser)){
             statement.setLong(1, man.getId());
             statement.setString(2, man.getName());
             statement.setString(3, man.getLastName());
@@ -56,21 +42,19 @@ public class UserDaoJDBCImpl implements UserDao {
             System.out.println("Юзер не добавился");
         }
     }
-
+    @Override
     public void removeUserById(long id) {
-        Connection newCon = Util.getConnection();
         String del = "Delete from USERS where id=" + id;
-        try (Statement statement = newCon.createStatement()){
+        try (Statement statement = Util.getConnection().createStatement()){
             statement.execute(del);
         } catch (SQLException e) {
             System.out.println("Юзер не удален");
         }
     }
-
+    @Override
     public List<User> getAllUsers() {
         ArrayList<User> list = new ArrayList<>();
-        Connection newCon = Util.getConnection();
-        try (Statement statement = newCon.createStatement()){
+        try (Statement statement = Util.getConnection().createStatement()){
             ResultSet results = statement.executeQuery("SELECT * FROM USERS");
             while (results.next()) {
                 User user = new User();
@@ -85,10 +69,9 @@ public class UserDaoJDBCImpl implements UserDao {
         }
         return list;
     }
-
+    @Override
     public void cleanUsersTable() {
-        Connection newCon = Util.getConnection();
-        try (Statement statement = newCon.createStatement()){
+        try (Statement statement = Util.getConnection().createStatement()){
             statement.execute("Delete from USERS");
         } catch (SQLException e) {
             System.out.println("Данные еше живы");

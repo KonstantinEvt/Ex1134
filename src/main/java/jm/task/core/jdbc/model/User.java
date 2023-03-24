@@ -66,4 +66,18 @@ public class User {
     public String toString() {
         return "User id = " + this.id + "   Name:" + this.name + "   LastName:" + this.lastName + "   Age:" + this.age;
     }
+
+    @Override
+    public int hashCode() {
+        return Long.hashCode(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (obj == null || getClass() != obj.getClass()) return false;
+
+        User that = (User) obj;
+        return id.equals(that.getId());
+    }
 }
