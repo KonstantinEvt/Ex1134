@@ -12,26 +12,24 @@ public class UserDaoJDBCImpl implements UserDao {
     }
     @Override
     public void createUsersTable() {
-        String createTable = "CREATE TABLE IF NOT EXISTS USERS (id BIGINT primary key, Name VARCHAR(20), LastName VARCHAR(45), age TINYINT)";
-        try (Statement statement = Util.getConnection().createStatement()){
-            statement.execute(createTable);
+        try (PreparedStatement statement = Util.getConnection().prepareStatement("CREATE TABLE IF NOT EXISTS USERS (id BIGINT primary key, Name VARCHAR(20), LastName VARCHAR(45), age TINYINT)")) {
+            statement.executeUpdate();
         }catch (Exception e) {
             System.out.println("Таблица не добавилась");
         }
     }
     @Override
     public void dropUsersTable() {
-        try (Statement statement = Util.getConnection().createStatement()){
-                statement.execute("DROP TABLE IF EXISTS USERS");
+        try (PreparedStatement statement = Util.getConnection().prepareStatement("DROP TABLE IF EXISTS USERS")) {
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Eще жива табличка");
         }
     }
     @Override
     public void saveUser(String name, String lastName, byte age) {
-        String insertUser = "INSERT INTO USERS(id, name, lastName, age) VALUES (?, ?, ?, ?)";
         User man = new User(name,lastName,age);
-        try (PreparedStatement statement = Util.getConnection().prepareStatement(insertUser)){
+        try (PreparedStatement statement = Util.getConnection().prepareStatement("INSERT INTO USERS(id, name, lastName, age) VALUES (?, ?, ?, ?)")) {
             statement.setLong(1, man.getId());
             statement.setString(2, man.getName());
             statement.setString(3, man.getLastName());
@@ -44,9 +42,9 @@ public class UserDaoJDBCImpl implements UserDao {
     }
     @Override
     public void removeUserById(long id) {
-        String del = "Delete from USERS where id=" + id;
-        try (Statement statement = Util.getConnection().createStatement()){
-            statement.execute(del);
+        try (PreparedStatement statement = Util.getConnection().prepareStatement("Delete from USERS where id = ?")) {
+            statement.setLong(1, id);
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Юзер не удален");
         }
@@ -54,8 +52,7 @@ public class UserDaoJDBCImpl implements UserDao {
     @Override
     public List<User> getAllUsers() {
         ArrayList<User> list = new ArrayList<>();
-        try (Statement statement = Util.getConnection().createStatement()){
-            ResultSet results = statement.executeQuery("SELECT * FROM USERS");
+        try (ResultSet results = Util.getConnection().prepareStatement("SELECT * FROM USERS").executeQuery()){
             while (results.next()) {
                 User user = new User();
                 user.setId(results.getLong(1));
@@ -71,8 +68,8 @@ public class UserDaoJDBCImpl implements UserDao {
     }
     @Override
     public void cleanUsersTable() {
-        try (Statement statement = Util.getConnection().createStatement()){
-            statement.execute("Delete from USERS");
+        try (PreparedStatement statement = Util.getConnection().prepareStatement("Delete from USERS")){
+            statement.executeUpdate();
         } catch (SQLException e) {
             System.out.println("Данные еше живы");
         }
